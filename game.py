@@ -1,10 +1,17 @@
+import numpy as np
 from data import ships
-from gameplay import Ship
+from gameplay import Sea, Ship
 
 
 def play():
-    print("game played!")
-    _ = Ship('gunboat01', ships['gunboat01'])
+    sea = Sea()
+    ship_types = list(ships.keys())
+    for i in range(3):
+        atk = np.random.choice(ship_types)
+        sea.add_attacker(Ship(atk, ships[atk]), i)
+        opp = np.random.choice(ship_types)
+        sea.add_defender(Ship(opp, ships[opp]), i)
+    print(sea)
 
 
 if __name__ == '__main__':

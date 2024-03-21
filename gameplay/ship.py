@@ -4,8 +4,10 @@ class Ship:
     level: int
     speed: float
     firepower: float
-    hit_points: float
     max_hp: float
+
+    cooldown: float
+    hit_points: float
 
     def __init__(self, name: str, stats):
         self.name = name
@@ -13,6 +15,7 @@ class Ship:
         self.speed = stats['speed']
         self.firepower = stats['fire']
         self.max_hp = stats['maxhp']
+        self.cooldown = 1.
         self.hit_points = self.max_hp
 
     def fire(self, at: 'Ship'):
@@ -20,3 +23,12 @@ class Ship:
 
     def take_damage(self, attacker: 'Ship'):
         self.hit_points = max(0., self.hit_points - attacker.firepower)
+
+    def __str__(self) -> str:
+        return "{0:} ({3:.2f}, {1:.0f}/{2:.0f})".format(self.name, self.hit_points, self.max_hp, self.cooldown)
+
+    def cool(self, steps: float):
+        self.cooldown -= self.speed / 1000 * steps
+
+    def get_remaining_steps(self) -> float:
+        return self.cooldown * 1000 / self.speed
