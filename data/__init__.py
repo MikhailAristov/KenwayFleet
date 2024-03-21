@@ -1,0 +1,15 @@
+ships = {
+    'gunboat01': {'level': 1, 'speed': 80., 'fire': 6., 'maxhp': 12.},
+    'schooner04': {'level': 4, 'speed': 63., 'fire': 12., 'maxhp': 27.},
+    'schooner08': {'level': 8, 'speed': 66., 'fire': 14., 'maxhp': 29.},
+    'schooner11': {'level': 11, 'speed': 70., 'fire': 15., 'maxhp': 30.},
+    'brig17': {'level': 17, 'speed': 54., 'fire': 23., 'maxhp': 45.},
+    'brig20': {'level': 20, 'speed': 57., 'fire': 24., 'maxhp': 48.},
+    'brig25': {'level': 25, 'speed': 60., 'fire': 25., 'maxhp': 50.},
+    'frigate23': {'level': 23, 'speed': 45., 'fire': 32., 'maxhp': 63.},
+    'frigate29': {'level': 29, 'speed': 48., 'fire': 33., 'maxhp': 67.},
+    'frigate38': {'level': 38, 'speed': 50., 'fire': 35., 'maxhp': 70.},
+    'manowar36': {'level': 36, 'speed': 9., 'fire': 63., 'maxhp': 135.},
+    'manowar49': {'level': 49, 'speed': 20., 'fire': 67., 'maxhp': 143.},
+    'manowar60': {'level': 60, 'speed': 30., 'fire': 70., 'maxhp': 150.},
+}
