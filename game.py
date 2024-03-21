@@ -22,7 +22,7 @@ def play(attacker: BasicAI, defender: BasicAI):
         # query the AI what to do next
         target = attacker.get_next_target(data) if data.active < 3 else defender.get_next_target(data)
         # fire the volley
-        _ = battle.fire_volley(data.active, target)
+        battle.fire_volley(data.active, target)
 
 
 if __name__ == '__main__':
