@@ -1,4 +1,5 @@
-from dataclasses import  dataclass
+from dataclasses import dataclass
+
 
 @dataclass
 class ShipData:
@@ -26,8 +27,8 @@ class Ship:
         self.speed = stats['speed']
         self.firepower = stats['fire']
         self.max_hp = stats['maxhp']
-        self.cooldown = 1.
         self.hit_points = self.max_hp
+        self.reset_cooldown()
 
     def fire(self, target: 'Ship'):
         target.take_damage(self.firepower)

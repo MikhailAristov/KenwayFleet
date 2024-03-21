@@ -14,8 +14,8 @@ class Battle:
     attackers: List[Ship] = [None, None, None]
     defenders: List[Ship] = [None, None, None]
 
-    volley_count: int = 1
-    finished: bool = False
+    volley_count: int = 0
+    winner: str = ""
 
     @property
     def all_ships(self) -> List[Ship]:
@@ -27,7 +27,6 @@ class Battle:
 
     def add_defender(self, ship: Ship, pos: int):
         ship.cooldown *= randf(.95, .999)
-        ship.hit_points *= randf(.85, 1.)
         self.defenders[pos] = ship
 
     def print_state(self):
@@ -36,19 +35,24 @@ class Battle:
             print(" {1:<31}{2:>31}".format(i + 1, str(self.attackers[i]), str(self.defenders[i])))
         print('~' * 64)
 
-    def proceed_to_next_volley(self) -> BattleData:
-        print("                            VOLLEY", self.volley_count)
+    def proceed_to_next_volley(self, verbose: bool = False) -> BattleData:
+        self.volley_count += 1
+        if verbose:
+            print("                            VOLLEY", self.volley_count)
         next_ship_id, steps = self.next_position_to_fire
         for s in [s for s in self.all_ships if s is not None]:
             s.cool(steps)
-        self.print_state()
+        if verbose:
+            self.print_state()
         return BattleData([s.data if s else None for s in self.all_ships], next_ship_id)
 
-    def fire_volley(self, attacker_id: int, target_id: int):
+    def fire_volley(self, attacker_id: int, target_id: int, verbose: bool = False):
         attacker = self.all_ships[attacker_id]
         target = self.all_ships[target_id]
 
         # inflict damage and reset cooldown
+        if verbose:
+            print(attacker, "fires at", target)
         attacker.fire(target)
         attacker.reset_cooldown()
 
@@ -58,17 +62,18 @@ class Battle:
                 self.attackers[target_id] = None
             else:
                 self.defenders[target_id - 3] = None
-        self.print_state()
+        if verbose:
+            self.print_state()
 
         # check if either side has won
         if target.is_sunk and all(s is None for s in self.defenders):
-            print("The Attackers have won the battle!")
-            self.finished = True
+            if verbose:
+                print("The Attackers have won the battle!")
+            self.winner = "ATK"
         elif target.is_sunk and all(s is None for s in self.attackers):
-            print("The Defenders have won the battle!")
-            self.finished = True
-
-        self.volley_count += 1
+            if verbose:
+                print("The Defenders have won the battle!")
+            self.winner = "DEF"
 
     @property
     def next_position_to_fire(self) -> (int, float):

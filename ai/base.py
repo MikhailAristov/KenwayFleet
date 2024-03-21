@@ -3,7 +3,7 @@ from typing import List
 from gameplay import BattleData
 
 
-class BasicAI(ABC):
+class Targeter(ABC):
 
     @staticmethod
     def get_valid_targets(battle: BattleData) -> List[int]:
