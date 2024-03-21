@@ -11,7 +11,12 @@ def play():
         sea.add_attacker(Ship(atk, ships[atk]), i)
         opp = np.random.choice(ship_types)
         sea.add_defender(Ship(opp, ships[opp]), i)
-    print(sea)
+
+    for t in range(3):
+        print(sea)
+        next_ship = sea.wait_for_next_ship()
+        print(str(next_ship), "fires!")
+        next_ship.reset_cooldown()
 
 
 if __name__ == '__main__':

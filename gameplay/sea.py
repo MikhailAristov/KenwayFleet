@@ -10,10 +10,12 @@ class Sea:
     defenders: List[Ship] = [None, None, None]
 
     def add_attacker(self, ship: Ship, pos: int):
+        ship.cooldown *= randf(.95, .999)
         self.attackers[pos] = ship
         self.all_ships.append(ship)
 
     def add_defender(self, ship: Ship, pos: int):
+        ship.cooldown *= randf(.95, .999)
         ship.hit_points *= randf(.85, 1.)
         self.defenders[pos] = ship
         self.all_ships.append(ship)
@@ -27,3 +29,10 @@ class Sea:
             rows.append(format_str.format(i + 1, str(self.attackers[i]), str(self.defenders[i])))
         rows.append(separator)
         return '\r\n'.join(rows)
+
+    def wait_for_next_ship(self) -> Ship:
+        next_ship: Ship = min(self.all_ships, key=lambda x: x.remaining_steps)
+        steps = next_ship.remaining_steps
+        for s in self.all_ships:
+            s.cool(steps)
+        return next_ship

@@ -28,7 +28,11 @@ class Ship:
         return "{0:} ({3:.2f}, {1:.0f}/{2:.0f})".format(self.name, self.hit_points, self.max_hp, self.cooldown)
 
     def cool(self, steps: float):
-        self.cooldown -= self.speed / 1000 * steps
+        self.cooldown = max(0., self.cooldown - self.speed / 1000 * steps)
 
-    def get_remaining_steps(self) -> float:
+    @property
+    def remaining_steps(self):
         return self.cooldown * 1000 / self.speed
+
+    def reset_cooldown(self):
+        self.cooldown = 1.
