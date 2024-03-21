@@ -28,10 +28,10 @@ def play(attacker: Targeter, defender: Targeter) -> str:
 
 
 if __name__ == '__main__':
-    ATK = UtilityBasedTargeter()
+    ATK = MinimaxTargeter()
     DEF = RandomTargeter()
 
-    battles = 10000
+    battles = 1000
     scoreboard = {'ATK': 0, 'DEF': 0}
     for r in range(battles):
         if r % (battles // 10) == 0:
