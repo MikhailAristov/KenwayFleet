@@ -55,7 +55,3 @@ class Ship:
     @property
     def data(self) -> ShipData:
         return ShipData(self.level, self.speed, self.firepower, self.hit_points, self.cooldown)
-
-    @staticmethod
-    def get_data(ship: 'Ship') -> ShipData:
-        return ship.data if ship else None

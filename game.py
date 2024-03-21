@@ -1,9 +1,10 @@
 import numpy as np
+from ai import *
 from data import ships
 from gameplay import Battle, Ship
 
 
-def play():
+def play(attacker: BasicAI, defender: BasicAI):
     battle = Battle()
     ship_types = list(ships.keys())
     for i in range(3):
@@ -13,22 +14,24 @@ def play():
         battle.add_defender(Ship(opp, ships[opp]), i)
     print(battle)
 
-    for t in range(100):
+    turn = 1
+    while not battle.victor:
         next_ship = battle.wait_for_next_ship()
-        print("                             TURN", t + 1)
+        print("                             TURN", turn)
         print(battle)
-        target: Ship = np.random.choice(battle.get_valid_targets(next_ship))
+        pos = attacker.get_next_target(battle.data)
+        target: Ship = battle.get_ship_at_position(pos)
         print("{0} fires at {1}!".format(next_ship, target))
         next_ship.fire(target)
         if target.is_sunk:
             battle.remove_ship(target)
         next_ship.reset_cooldown()
         print(battle)
-        print(battle.data)
-        if battle.victor:
-            print("{0} win the battle!".format(battle.victor))
-            break
+        turn += 1
+
+    print("{0} win the battle!".format(battle.victor))
 
 
 if __name__ == '__main__':
-    play()
+    AI = RandomAI()
+    play(AI, AI)
