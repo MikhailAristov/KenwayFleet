@@ -4,7 +4,6 @@ from gameplay.ship import Ship
 
 
 class Sea:
-
     all_ships: List[Ship] = []
     attackers: List[Ship] = [None, None, None]
     defenders: List[Ship] = [None, None, None]
@@ -36,3 +35,26 @@ class Sea:
         for s in self.all_ships:
             s.cool(steps)
         return next_ship
+
+    def get_valid_targets(self, for_ship: Ship) -> List[Ship]:
+        assert for_ship is not None
+        if for_ship in self.attackers:
+            return [s for s in self.defenders if s is not None and not s.is_sunk]
+        elif for_ship in self.defenders:
+            return [s for s in self.attackers if s is not None and not s.is_sunk]
+        raise "Invalid ship!"
+
+    def remove_ship(self, ship: Ship):
+        if ship in self.all_ships:
+            self.attackers = [None if s == ship else s for s in self.attackers]
+            self.defenders = [None if s == ship else s for s in self.defenders]
+            self.all_ships.remove(ship)
+
+    @property
+    def victor(self) -> str:
+        if all(s is None for s in self.defenders):
+            return "Attackers"
+        elif all(s is None for s in self.attackers):
+            return "Defenders"
+        else:
+            return ""
