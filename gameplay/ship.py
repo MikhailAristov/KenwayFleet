@@ -1,3 +1,14 @@
+from dataclasses import  dataclass
+
+@dataclass
+class ShipData:
+    level: int
+    speed: float
+    fire: float
+    hp: float
+    cooldown: float
+
+
 class Ship:
 
     name: str
@@ -40,3 +51,11 @@ class Ship:
     @property
     def is_sunk(self) -> bool:
         return self.hit_points <= 0
+
+    @property
+    def data(self) -> ShipData:
+        return ShipData(self.level, self.speed, self.firepower, self.hit_points, self.cooldown)
+
+    @staticmethod
+    def get_data(ship: 'Ship') -> ShipData:
+        return ship.data if ship else None
