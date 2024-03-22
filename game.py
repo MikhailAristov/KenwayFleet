@@ -1,5 +1,5 @@
 import numpy as np
-from ai import Targeter, LevelBasedTargeter, RandomTargeter, UtilityBasedTargeter, MinimaxTargeter
+from ai import *
 from data import ships
 from gameplay import Battle, Ship
 
@@ -13,8 +13,8 @@ def play(attacker: Targeter, defender: Targeter) -> str:
     for i in range(3):
         atk = np.random.choice(ship_types, p=ship_weights)
         battle.add_attacker(Ship(atk, ships[atk]), i)
-        # opp = np.random.choice(ship_types, p=ship_weights)
-        battle.add_defender(Ship(atk, ships[atk]), i)
+        opp = np.random.choice(ship_types, p=ship_weights)
+        battle.add_defender(Ship(opp, ships[opp]), i)
     battle.print_state()
 
     # play out the battle until done
@@ -22,7 +22,8 @@ def play(attacker: Targeter, defender: Targeter) -> str:
         # advance battle to the next volley
         data = battle.proceed_to_next_volley(verbose=True)
         # query the AI what to do next
-        target = attacker.get_next_target(data) if data.active < 3 else defender.get_next_target(data)
+        target = attacker.get_next_target(data) if data.active < 3 \
+            else defender.get_next_target(data)
         # fire the volley
         battle.fire_volley(data.active, target, verbose=True)
 
@@ -30,7 +31,6 @@ def play(attacker: Targeter, defender: Targeter) -> str:
 
 
 if __name__ == '__main__':
-    ATK = MinimaxTargeter()
-    ATK.level = 15
+    ATK = MinimaxTargeter(level=15)
     DEF = UtilityBasedTargeter()
     _ = play(ATK, DEF)

@@ -28,8 +28,7 @@ def play(attacker: Targeter, defender: Targeter) -> str:
 
 
 if __name__ == '__main__':
-    ATK = MinimaxTargeter()
-    ATK.level = 10
+    ATK = MinimaxTargeter(level=6)
     DEF = UtilityBasedTargeter()
 
     battles = 1000

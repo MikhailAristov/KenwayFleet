@@ -1,12 +1,15 @@
 from copy import deepcopy
-from ai.base import Targeter
+from ai import Targeter
 from gameplay import BattleData, ShipData
 
 
 class MinimaxTargeter(Targeter):
-    sup_score: float = 500.
-    inf_score: float = -500.
-    level: int = 6
+    sup_score: float
+    inf_score: float
+    level: int
+
+    def __init__(self, **kwargs):
+        self.level = kwargs['level'] if 'level' in kwargs else 6
 
     def get_next_target(self, battle: BattleData) -> int:
         self.sup_score = sum([s.hp for s in battle.ships[0:3] if s is not None])
