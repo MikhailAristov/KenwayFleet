@@ -1,5 +1,5 @@
 import numpy as np
-from ai import Targeter, LevelBasedTargeter, RandomTargeter, UtilityBasedTargeter, MinimaxTargeter
+from ai import *
 from data import ships
 from gameplay import Battle, Ship
 
@@ -8,29 +8,36 @@ def play(attacker: Targeter, defender: Targeter) -> str:
     # set up the battle with random ships
     battle = Battle()
     ship_types = list(ships.keys())
-    ship_weights = np.array([1. / ships[t]['level'] for t in ship_types])
-    ship_weights /= sum(ship_weights)
     for i in range(3):
-        atk = np.random.choice(ship_types, p=ship_weights)
+        atk = np.random.choice(ship_types)
         battle.add_attacker(Ship(atk, ships[atk]), i)
-        # opp = np.random.choice(ship_types, p=ship_weights)
+        # opp = np.random.choice(ship_types)
         battle.add_defender(Ship(atk, ships[atk]), i)
-    battle.print_state()
+    # battle.print_state()
 
     # play out the battle until done
     while not battle.winner:
         # advance battle to the next volley
-        data = battle.proceed_to_next_volley(verbose=True)
+        data = battle.proceed_to_next_volley(verbose=False)
         # query the AI what to do next
         target = attacker.get_next_target(data) if data.active < 3 else defender.get_next_target(data)
         # fire the volley
-        battle.fire_volley(data.active, target, verbose=True)
+        battle.fire_volley(data.active, target, verbose=False)
 
     return battle.winner
 
 
 if __name__ == '__main__':
     ATK = MinimaxTargeter()
-    ATK.level = 15
+    ATK.level = 10
     DEF = UtilityBasedTargeter()
-    _ = play(ATK, DEF)
+
+    battles = 1000
+    scoreboard = {'ATK': 0, 'DEF': 0}
+    for r in range(battles):
+        if r % (battles // 10) == 0:
+            print("Playing game", r)
+        winner = play(ATK, DEF)
+        scoreboard[winner] += 1
+    print(scoreboard)
+    print("ATK advantage: {:.2%}".format((scoreboard['ATK'] - battles // 2) / (battles // 2)))
