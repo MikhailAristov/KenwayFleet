@@ -37,7 +37,7 @@ class Battle:
     def print_state(self):
         print('~' * 64)
         for i in range(3):
-            print(" {1:<31}{2:>31}".format(i + 1, str(self.attackers[i]), str(self.defenders[i])))
+            print(" {0:<31}{1:>31}".format(str(self.attackers[i]), str(self.defenders[i])))
         print('~' * 64)
 
     def proceed_to_next_volley(self, verbose: bool = False) -> BattleData:

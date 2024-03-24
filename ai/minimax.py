@@ -18,18 +18,23 @@ class MinimaxTargeter(Targeter):
         self.level = kwargs['level'] if 'level' in kwargs else 6
 
     def get_attacking_flotilla(self, ships: dict, defenders: list[Ship]) -> list[Ship]:
+        print("Evaluating starting lineups...")
         lineups = Targeter.get_all_lineups(ships, sum([s.level for s in defenders]))
+        count = len(lineups)
 
         base_state = BattleData([None, None, None] + [s.data for s in defenders], -1)
 
         best_lineup: tuple[str] = lineups[0]
         best_eval = -1e6
-        for lineup in lineups:
+        for j in range(count):
+            # display progress
+            print("\r|{0:<62}|".format("~" * int(62. * (j + 1) / count)), end='' if j < count - 1 else "\n")
+            # create a new state
+            lineup = lineups[j]
             state = self.duplicate_battle(base_state)
             # set attacking ships
             for i in range(3):
-                t: dict = ships[lineup[i]]
-                state.ships[i] = ShipData(t['level'], t['speed'], t['fire'], t['maxhp'], 1.)
+                state.ships[i] = self.get_ship_data(ships[lineup[i]])
             # simulate to first volley
             MinimaxTargeter.simulate_to_next_volley(state)
             # evaluate the performance of the lineup
@@ -41,6 +46,7 @@ class MinimaxTargeter(Targeter):
                 best_eval = val
             self.state_cache.append(state)
 
+        print("Chosen attacker lineup:", best_lineup)
         return [Ship(a, ships[a]) for a in best_lineup]
 
     def get_next_target(self, battle: BattleData) -> int:
@@ -138,6 +144,18 @@ class MinimaxTargeter(Targeter):
             return result
         else:
             return ShipData(ship.level, ship.speed, ship.fire, ship.hp, ship.cooldown)
+
+    def get_ship_data(self, raw: dict) -> ShipData:
+        if len(self.ship_cache):
+            result = self.ship_cache.pop()
+            result.level = raw['level']
+            result.speed = raw['speed']
+            result.fire = raw['fire']
+            result.hp = raw['maxhp']
+            result.cooldown = 1.
+            return result
+        else:
+            return ShipData(raw['level'], raw['speed'], raw['fire'], raw['maxhp'], 1.)
 
     @staticmethod
     def simulate_to_next_volley(state: BattleData):

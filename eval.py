@@ -31,7 +31,7 @@ if __name__ == '__main__':
     ATK = MinimaxTargeter(level=6)
     DEF = UtilityBasedTargeter()
 
-    np.random.seed(12345)
+    # np.random.seed(12345)
 
     battles = 1000
     scoreboard = {'ATK': 0, 'DEF': 0}
