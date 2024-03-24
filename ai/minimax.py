@@ -1,6 +1,7 @@
 from copy import deepcopy
+
 from ai import Targeter
-from gameplay import BattleData, ShipData
+from gameplay import BattleData, ShipData, Ship
 
 
 class MinimaxTargeter(Targeter):
@@ -11,15 +12,43 @@ class MinimaxTargeter(Targeter):
     def __init__(self, **kwargs):
         self.level = kwargs['level'] if 'level' in kwargs else 6
 
+    def get_attacking_flotilla(self, ships: dict, defenders: list[Ship]) -> list[Ship]:
+        lineups = Targeter.get_all_lineups(ships, sum([s.level for s in defenders]))
+
+        base_state = BattleData([None, None, None] + [s.data for s in defenders], -1)
+
+        best_lineup: tuple[str] = lineups[0]
+        best_eval = -1000
+        for lineup in lineups:
+            state = deepcopy(base_state)
+            # set attacking ships
+            for i in range(3):
+                t: dict = ships[lineup[i]]
+                state.ships[i] = ShipData(t['level'], t['speed'], t['fire'], t['maxhp'], 1.)
+            # simulate to first volley
+            MinimaxTargeter.simulate_to_next_volley(state)
+            # evaluate the performance of the lineup
+            self.set_inf_and_sup_scores(state)
+            val, _ = self.minimax(state, self.level, self.inf_score, self.sup_score)
+            # print(lineup, val)
+            if val > best_eval:
+                best_lineup = lineup
+                best_eval = val
+
+        return [Ship(a, ships[a]) for a in best_lineup]
+
     def get_next_target(self, battle: BattleData) -> int:
-        self.sup_score = sum([s.hp for s in battle.ships[0:3] if s is not None])
-        self.inf_score = -sum([s.hp for s in battle.ships[3:6] if s is not None])
+        self.set_inf_and_sup_scores(battle)
         _, result = self.minimax(battle, self.level, self.inf_score, self.sup_score)
         return result
 
+    def set_inf_and_sup_scores(self, battle: BattleData):
+        self.sup_score = sum([s.hp for s in battle.ships[0:3] if s is not None])
+        self.inf_score = -sum([s.hp for s in battle.ships[3:6] if s is not None])
+
     def minimax(self, state: BattleData, depth: int, alpha: float, beta: float) -> (float, int):
         if depth < 1 or MinimaxTargeter.is_over(state):
-            return MinimaxTargeter.evaluate(state) + (1 - 2 * MinimaxTargeter.get_winner(state)) * depth, -1
+            return MinimaxTargeter.evaluate(state) + depth * MinimaxTargeter.get_winner(state), -1
 
         best_move = -1
         if state.active < 3:  # maximizing player
@@ -50,8 +79,13 @@ class MinimaxTargeter(Targeter):
         return all([s is None for s in state.ships[0:3]]) or all([s is None for s in state.ships[3:6]])
 
     @staticmethod
-    def get_winner(state: BattleData):  # 0 = attacker, 1 = defender
-        return 1 if all([s is None for s in state.ships[0:3]]) else 0
+    def get_winner(state: BattleData):  # 1 = attacker, -1 = defender, 0 = none yet
+        if all([s is None for s in state.ships[0:3]]):
+            return 1
+        elif all([s is None for s in state.ships[3:6]]):
+            return -1
+        else:
+            return 0
 
     @staticmethod
     def simulate(state: BattleData, tgt: int) -> BattleData:
@@ -65,15 +99,19 @@ class MinimaxTargeter(Targeter):
         # reset the attackers cooldown
         new_state.ships[new_state.active].cooldown = 1.
         # compute time to the volley
-        new_state.active = min(range(6),
-                               key=lambda x: MinimaxTargeter.get_steps_in_cooldown(new_state.ships[x])
-                               if new_state.ships[x] else 1000)
-        steps = MinimaxTargeter.get_steps_in_cooldown(new_state.ships[new_state.active])
+        MinimaxTargeter.simulate_to_next_volley(new_state)
+        return new_state
+
+    @staticmethod
+    def simulate_to_next_volley(state: BattleData):
+        state.active = min(range(6),
+                           key=lambda x: MinimaxTargeter.get_steps_in_cooldown(state.ships[x])
+                           if state.ships[x] else 1000)
+        steps = MinimaxTargeter.get_steps_in_cooldown(state.ships[state.active])
         # subtract the time elapsed from everyone's cooldown
-        for s in new_state.ships:
+        for s in state.ships:
             if s is not None:
                 s.cooldown -= s.speed / 1000 * steps
-        return new_state
 
     @staticmethod
     def get_steps_in_cooldown(ship: ShipData) -> float:

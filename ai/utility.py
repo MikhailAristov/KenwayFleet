@@ -1,8 +1,13 @@
+from numpy.random import randint
 from ai import Targeter
-from gameplay import BattleData
+from gameplay import BattleData, Ship
 
 
 class UtilityBasedTargeter(Targeter):
+
+    def get_attacking_flotilla(self, ships: dict, defenders: list[Ship]) -> list[Ship]:
+        lineups = Targeter.get_all_lineups(ships, sum([s.level for s in defenders]))
+        return [Ship(t, ships[t]) for t in lineups[randint(len(lineups))]]
 
     def get_next_target(self, battle: BattleData) -> int:
         targets = Targeter.get_valid_targets(battle)

@@ -21,7 +21,7 @@ class Ship:
     cooldown: float
     hit_points: float
 
-    def __init__(self, name: str, stats):
+    def __init__(self, name: str, stats: dict):
         self.name = name
         self.level = stats['level']
         self.speed = stats['speed']

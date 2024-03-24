@@ -1,33 +1,38 @@
 from dataclasses import dataclass
 from numpy.random import uniform as randf
-from typing import List
 from gameplay.ship import Ship, ShipData
 
 
 @dataclass
 class BattleData:
-    ships: List[ShipData]
+    ships: list[ShipData]
     active: int
 
 
 class Battle:
-    attackers: List[Ship] = [None, None, None]
-    defenders: List[Ship] = [None, None, None]
+    attackers: list[Ship] = [None, None, None]
+    defenders: list[Ship] = [None, None, None]
 
     volley_count: int = 0
     winner: str = ""
 
     @property
-    def all_ships(self) -> List[Ship]:
+    def all_ships(self) -> list[Ship]:
         return self.attackers + self.defenders
 
-    def add_attacker(self, ship: Ship, pos: int):
+    def add_attacker(self, ship: Ship):
         ship.cooldown *= randf(.95, .999)
-        self.attackers[pos] = ship
+        for i in range(3):
+            if self.attackers[i] is None:
+                self.attackers[i] = ship
+                return
 
-    def add_defender(self, ship: Ship, pos: int):
+    def add_defender(self, ship: Ship):
         ship.cooldown *= randf(.95, .999)
-        self.defenders[pos] = ship
+        for i in range(3):
+            if self.defenders[i] is None:
+                self.defenders[i] = ship
+                return
 
     def print_state(self):
         print('~' * 64)

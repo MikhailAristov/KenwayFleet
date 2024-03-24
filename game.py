@@ -1,28 +1,17 @@
-import numpy as np
-from itertools import combinations_with_replacement
+from numpy.random import choice
 from ai import *
 from data import ships
 from gameplay import Battle, Ship
 
 
 def play(attacker: Targeter, defender: Targeter) -> str:
-    # set up the battle with random ships
+    # set up the battle with random defending ships
     battle = Battle()
-    ship_types = list(ships.keys())
-    for i in range(3):
-        opp = np.random.choice(ship_types)
-        battle.add_defender(Ship(opp, ships[opp]), i)
-    defender_level: float = sum([s.level for s in battle.defenders])
-    # examine possible lineups
-    legal_lineups = []
-    for lineup in combinations_with_replacement(ship_types, 3):
-        if defender_level * .9 < sum([ships[s]['level'] for s in lineup]) < defender_level * 1.1:
-            legal_lineups.append(lineup)
+    for def_ship in choice(list(ships.keys()), 3):
+        battle.add_defender(Ship(def_ship, ships[def_ship]))
     # Pick a legal lineup at random
-    final_lineup = legal_lineups[np.random.randint(len(legal_lineups))]
-    for i in range(3):
-        atk = str(final_lineup[i])
-        battle.add_attacker(Ship(atk, ships[atk]), i)
+    for atk_ship in attacker.get_attacking_flotilla(ships, battle.defenders):
+        battle.add_attacker(atk_ship)
     battle.print_state()
 
     # play out the battle until done

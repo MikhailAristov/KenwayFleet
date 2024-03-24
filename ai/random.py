@@ -1,10 +1,11 @@
 import numpy as np
-from numpy.random import choice
+from numpy.random import choice, randint
 from ai import Targeter
-from gameplay import BattleData
+from gameplay import BattleData, Ship
 
 
 class RandomTargeter(Targeter):
+
     weighted_by: str
 
     weight_calc = {
@@ -15,6 +16,10 @@ class RandomTargeter(Targeter):
     def __init__(self, weighted_by='none'):
         if weighted_by in self.weight_calc.keys():
             self.weighted_by = weighted_by
+
+    def get_attacking_flotilla(self, ships: dict, defenders: list[Ship]) -> list[Ship]:
+        lineups = Targeter.get_all_lineups(ships, sum([s.level for s in defenders]))
+        return [Ship(t, ships[t]) for t in lineups[randint(len(lineups))]]
 
     def get_next_target(self, battle: BattleData) -> int:
         targets = Targeter.get_valid_targets(battle)
