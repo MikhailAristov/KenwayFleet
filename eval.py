@@ -31,6 +31,8 @@ if __name__ == '__main__':
     ATK = MinimaxTargeter(level=6)
     DEF = UtilityBasedTargeter()
 
+    np.random.seed(12345)
+
     battles = 1000
     scoreboard = {'ATK': 0, 'DEF': 0}
     for r in range(battles):
@@ -40,3 +42,4 @@ if __name__ == '__main__':
         scoreboard[winner] += 1
     print(scoreboard)
     print("ATK advantage: {:.2%}".format((scoreboard['ATK'] - battles // 2) / (battles // 2)))
+    print("Average minimax time pro call: {:.3} ms".format(ATK.target_call_time / ATK.target_calls * 1000))
