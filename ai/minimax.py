@@ -1,5 +1,4 @@
 from copy import deepcopy
-
 from ai import Targeter
 from gameplay import BattleData, ShipData, Ship
 
@@ -18,7 +17,7 @@ class MinimaxTargeter(Targeter):
         base_state = BattleData([None, None, None] + [s.data for s in defenders], -1)
 
         best_lineup: tuple[str] = lineups[0]
-        best_eval = -1000
+        best_eval = -1e6
         for lineup in lineups:
             state = deepcopy(base_state)
             # set attacking ships
@@ -40,14 +39,15 @@ class MinimaxTargeter(Targeter):
     def get_next_target(self, battle: BattleData) -> int:
         self.set_inf_and_sup_scores(battle)
         _, result = self.minimax(battle, self.level, self.inf_score, self.sup_score)
+        assert result >= 0
         return result
 
     def set_inf_and_sup_scores(self, battle: BattleData):
-        self.sup_score = sum([s.hp for s in battle.ships[0:3] if s is not None])
-        self.inf_score = -sum([s.hp for s in battle.ships[3:6] if s is not None])
+        self.sup_score = sum([MinimaxTargeter.evaluate_ship(s) for s in battle.ships[0:3] if s is not None])
+        self.inf_score = -sum([MinimaxTargeter.evaluate_ship(s) for s in battle.ships[3:6] if s is not None])
 
     def minimax(self, state: BattleData, depth: int, alpha: float, beta: float) -> (float, int):
-        if depth < 1 or MinimaxTargeter.is_over(state):
+        if depth < 1 or MinimaxTargeter.get_winner(state) != 0:
             return MinimaxTargeter.evaluate(state) + depth * MinimaxTargeter.get_winner(state), -1
 
         best_move = -1
@@ -73,10 +73,6 @@ class MinimaxTargeter(Targeter):
                 if beta <= alpha:
                     break
             return min_score, best_move
-
-    @staticmethod
-    def is_over(state: BattleData):
-        return all([s is None for s in state.ships[0:3]]) or all([s is None for s in state.ships[3:6]])
 
     @staticmethod
     def get_winner(state: BattleData):  # 1 = attacker, -1 = defender, 0 = none yet
@@ -119,4 +115,9 @@ class MinimaxTargeter(Targeter):
 
     @staticmethod
     def evaluate(state: BattleData) -> float:
-        return sum([state.ships[i].hp * (1. if i < 3 else -1.) for i in range(6) if state.ships[i]])
+        return sum([MinimaxTargeter.evaluate_ship(state.ships[i]) * (1. if i < 3 else -1.)
+                    for i in range(6) if state.ships[i]])
+
+    @staticmethod
+    def evaluate_ship(data: ShipData) -> float:
+        return data.hp * data.fire * data.speed

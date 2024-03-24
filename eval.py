@@ -8,11 +8,11 @@ def play(attacker: Targeter, defender: Targeter) -> str:
     # set up the battle with random ships
     battle = Battle()
     ship_types = list(ships.keys())
-    for i in range(3):
+    for _ in range(3):
         atk = np.random.choice(ship_types)
-        battle.add_attacker(Ship(atk, ships[atk]), i)
-        # opp = np.random.choice(ship_types)
-        battle.add_defender(Ship(atk, ships[atk]), i)
+        battle.add_attacker(Ship(atk, ships[atk]))
+        opp = np.random.choice(ship_types)
+        battle.add_defender(Ship(opp, ships[opp]))
     # battle.print_state()
 
     # play out the battle until done
