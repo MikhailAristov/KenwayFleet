@@ -9,6 +9,12 @@ class ShipData:
     hp: float
     cooldown: float
 
+    def copy_values(self, other: 'ShipData'):
+        self.level = other.level
+        self.speed = other.speed
+        self.fire = other.fire
+        self.hp = other.hp
+        self.cooldown = other.cooldown
 
 class Ship:
 

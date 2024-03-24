@@ -1,4 +1,3 @@
-from copy import deepcopy
 from time import perf_counter
 from ai import Targeter
 from gameplay import BattleData, ShipData, Ship
@@ -26,7 +25,7 @@ class MinimaxTargeter(Targeter):
         best_lineup: tuple[str] = lineups[0]
         best_eval = -1e6
         for lineup in lineups:
-            state = deepcopy(base_state)
+            state = self.duplicate_battle(base_state)
             # set attacking ships
             for i in range(3):
                 t: dict = ships[lineup[i]]
@@ -40,6 +39,7 @@ class MinimaxTargeter(Targeter):
             if val > best_eval:
                 best_lineup = lineup
                 best_eval = val
+            self.state_cache.append(state)
 
         return [Ship(a, ships[a]) for a in best_lineup]
 
@@ -105,6 +105,7 @@ class MinimaxTargeter(Targeter):
         new_state.ships[tgt].hp -= new_state.ships[new_state.active].fire
         # check for sinking
         if new_state.ships[tgt].hp <= 0.:
+            self.ship_cache.append(new_state.ships[tgt])
             new_state.ships[tgt] = None
         # reset the attackers cooldown
         new_state.ships[new_state.active].cooldown = 1.
@@ -114,35 +115,29 @@ class MinimaxTargeter(Targeter):
 
     def duplicate_battle(self, state: BattleData) -> BattleData:
         if not len(self.state_cache):
-            return deepcopy(state)
+            return BattleData([None if s is None else self.duplicate_ship(s) for s in state.ships], state.active)
         else:
             result = self.state_cache.pop()
             result.active = state.active
             for i in range(6):
-                if result.ships[i] is None and state.ships[i] is not None:
-                    result.ships[i] = self.duplicate_ship(state.ships[i])
-                elif result.ships[i] is not None and state.ships[i] is not None:
-                    result.ships[i].level = state.ships[i].level
-                    result.ships[i].speed = state.ships[i].speed
-                    result.ships[i].fire = state.ships[i].fire
-                    result.ships[i].hp = state.ships[i].hp
-                    result.ships[i].cooldown = state.ships[i].cooldown
-                elif result.ships[i] is not None and state.ships[i] is None:
-                    self.ship_cache.append(result.ships[i])
-                    result.ships[i] = None
+                if result.ships[i] is None:
+                    if state.ships[i] is not None:
+                        result.ships[i] = self.duplicate_ship(state.ships[i])
+                else:
+                    if state.ships[i] is not None:
+                        result.ships[i].copy_values(state.ships[i])
+                    else:
+                        self.ship_cache.append(result.ships[i])
+                        result.ships[i] = None
             return result
 
     def duplicate_ship(self, ship: ShipData) -> ShipData:
-        if not len(self.ship_cache):
-            return deepcopy(ship)
-        else:
+        if len(self.ship_cache):
             result = self.ship_cache.pop()
-            result.level = ship.level
-            result.speed = ship.speed
-            result.fire = ship.fire
-            result.hp = ship.hp
-            result.cooldown = ship.cooldown
+            result.copy_values(ship)
             return result
+        else:
+            return ShipData(ship.level, ship.speed, ship.fire, ship.hp, ship.cooldown)
 
     @staticmethod
     def simulate_to_next_volley(state: BattleData):
