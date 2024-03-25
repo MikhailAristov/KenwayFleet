@@ -16,8 +16,8 @@ class ShipData:
         self.hp = other.hp
         self.cooldown = other.cooldown
 
-class Ship:
 
+class Ship:
     name: str
     level: int
     speed: float
@@ -32,7 +32,7 @@ class Ship:
         self.level = stats['level']
         self.speed = stats['speed']
         self.firepower = stats['fire']
-        self.max_hp = stats['maxhp']
+        self.max_hp = stats['max_hp']
         self.hit_points = self.max_hp
         self.reset_cooldown()
 

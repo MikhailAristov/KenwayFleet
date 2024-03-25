@@ -15,7 +15,8 @@ class Targeter(ABC):
 
     @staticmethod
     def get_all_lineups(ships: dict, total_level: float) -> list[tuple[str]]:
-        result = []
+        result: list[tuple[str]] = []
+        lineup: tuple[str]
         for lineup in combinations_with_replacement(ships.keys(), 3):
             if total_level * .9 <= sum([ships[s]['level'] for s in lineup]) <= total_level * 1.1:
                 result.append(lineup)

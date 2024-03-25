@@ -147,11 +147,11 @@ class MinimaxTargeter(Targeter):
             result.level = raw['level']
             result.speed = raw['speed']
             result.fire = raw['fire']
-            result.hp = raw['maxhp']
+            result.hp = raw['max_hp']
             result.cooldown = 1.
             return result
         else:
-            return ShipData(raw['level'], raw['speed'], raw['fire'], raw['maxhp'], 1.)
+            return ShipData(raw['level'], raw['speed'], raw['fire'], raw['max_hp'], 1.)
 
     @staticmethod
     def simulate_to_next_volley(state: BattleData):
