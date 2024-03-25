@@ -15,7 +15,8 @@ class MinimaxTargeter(Targeter):
     ship_cache: list[ShipData] = []
 
     def __init__(self, **kwargs):
-        self.level = kwargs['level'] if 'level' in kwargs else 6
+        self.level = int(kwargs['level']) if 'level' in kwargs else 6
+        self.eval_ship = kwargs['eval_ship'] if 'eval_ship' in kwargs else lambda s: s.hp * s.fire * s.speed
 
     def get_attacking_flotilla(self, ships: dict, defenders: list[Ship]) -> list[Ship]:
         print("Evaluating starting lineups...")
@@ -59,12 +60,12 @@ class MinimaxTargeter(Targeter):
         return result
 
     def set_inf_and_sup_scores(self, battle: BattleData):
-        self.sup_score = sum([MinimaxTargeter.evaluate_ship(s) for s in battle.ships[0:3] if s is not None])
-        self.inf_score = -sum([MinimaxTargeter.evaluate_ship(s) for s in battle.ships[3:6] if s is not None])
+        self.sup_score = sum([self.eval_ship(s) for s in battle.ships[0:3] if s is not None])
+        self.inf_score = -sum([self.eval_ship(s) for s in battle.ships[3:6] if s is not None])
 
     def minimax(self, state: BattleData, depth: int, alpha: float, beta: float) -> (float, int):
         if depth < 1 or MinimaxTargeter.get_winner(state) != 0:
-            return MinimaxTargeter.evaluate(state) + depth * MinimaxTargeter.get_winner(state), 7
+            return self.evaluate(state) + depth * MinimaxTargeter.get_winner(state), 7
 
         best_move = 7
         valid_targets: list[int] = Targeter.get_valid_targets(state)
@@ -96,13 +97,8 @@ class MinimaxTargeter(Targeter):
             return min_score, best_move
 
     @staticmethod
-    def get_winner(state: BattleData):  # 1 = attacker, -1 = defender, 0 = none yet
-        if all([s is None for s in state.ships[0:3]]):
-            return 1
-        elif all([s is None for s in state.ships[3:6]]):
-            return -1
-        else:
-            return 0
+    def get_winner(state: BattleData) -> int:  # 1 = attacker, -1 = defender, 0 = none yet
+        return all([s is None for s in state.ships[3:6]]) - all([s is None for s in state.ships[0:3]])
 
     def simulate(self, state: BattleData, tgt: int) -> BattleData:
         # copy old state
@@ -172,11 +168,6 @@ class MinimaxTargeter(Targeter):
     def get_steps_in_cooldown(ship: ShipData) -> float:
         return ship.cooldown * 1000 / ship.speed
 
-    @staticmethod
-    def evaluate(state: BattleData) -> float:
-        return sum([MinimaxTargeter.evaluate_ship(state.ships[i]) * (1. if i < 3 else -1.)
+    def evaluate(self, state: BattleData) -> float:
+        return sum([self.eval_ship(state.ships[i]) * (1. if i < 3 else -1.)
                     for i in range(6) if state.ships[i]])
-
-    @staticmethod
-    def evaluate_ship(data: ShipData) -> float:
-        return data.hp * data.fire * data.speed

@@ -28,8 +28,8 @@ def play(attacker: Targeter, defender: Targeter) -> str:
 
 
 if __name__ == '__main__':
-    ATK = MinimaxTargeter(level=6)
-    DEF = UtilityBasedTargeter()
+    ATK = MinimaxTargeter(level=6, eval_ship=lambda s: s.hp * s.fire)
+    DEF = MinimaxTargeter(level=6, eval_ship=lambda s: s.hp * s.fire * s.speed)
 
     # np.random.seed(12345)
 
@@ -42,4 +42,5 @@ if __name__ == '__main__':
         scoreboard[winner] += 1
     print(scoreboard)
     print("ATK advantage: {:.2%}".format((scoreboard['ATK'] - battles // 2) / (battles // 2)))
-    print("Average minimax time pro call: {:.3} ms".format(ATK.target_call_time / ATK.target_calls * 1000))
+    print("Mean ATK minimax time pro call: {:.3} ms".format(ATK.target_call_time / ATK.target_calls * 1000))
+    print("Mean DEF minimax time pro call: {:.3} ms".format(DEF.target_call_time / DEF.target_calls * 1000))
