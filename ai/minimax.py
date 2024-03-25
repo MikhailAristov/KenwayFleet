@@ -4,10 +4,6 @@ from gameplay import BattleData, ShipData, Ship
 
 
 class MinimaxTargeter(Targeter):
-    sup_score: float
-    inf_score: float
-    level: int
-
     target_calls: int = 0
     target_call_time: float = 0
 
@@ -15,7 +11,7 @@ class MinimaxTargeter(Targeter):
     ship_cache: list[ShipData] = []
 
     def __init__(self, **kwargs):
-        self.level = int(kwargs['level']) if 'level' in kwargs else 6
+        self.level: int = int(kwargs['level']) if 'level' in kwargs else 6
         self.eval_ship = kwargs['eval_ship'] if 'eval_ship' in kwargs else lambda s: s.hp * s.fire * s.speed
 
     def get_attacking_flotilla(self, ships: dict, defenders: list[Ship]) -> list[Ship]:
@@ -39,8 +35,7 @@ class MinimaxTargeter(Targeter):
             # simulate to first volley
             MinimaxTargeter.simulate_to_next_volley(state)
             # evaluate the performance of the lineup
-            self.set_inf_and_sup_scores(state)
-            val, _ = self.minimax(state, self.level, self.inf_score, self.sup_score)
+            val, _ = self.minimax(state, self.level)
             # print(lineup, val)
             if val > best_eval:
                 best_lineup = lineup
@@ -51,26 +46,22 @@ class MinimaxTargeter(Targeter):
         return [Ship(a, ships[a]) for a in best_lineup]
 
     def get_next_target(self, battle: BattleData) -> int:
-        self.set_inf_and_sup_scores(battle)
         start_time: float = perf_counter()
-        _, result = self.minimax(battle, self.level, self.inf_score, self.sup_score)
+        _, result = self.minimax(battle, self.level)
         self.target_call_time += perf_counter() - start_time
         self.target_calls += 1
         assert result >= 0
         return result
 
-    def set_inf_and_sup_scores(self, battle: BattleData):
-        self.sup_score = sum([self.eval_ship(s) for s in battle.ships[0:3] if s is not None])
-        self.inf_score = -sum([self.eval_ship(s) for s in battle.ships[3:6] if s is not None])
-
-    def minimax(self, state: BattleData, depth: int, alpha: float, beta: float) -> (float, int):
+    def minimax(self, state: BattleData, depth: int,
+                alpha: float = float('-inf'), beta: float = float('inf')) -> (float, int):
         if depth < 1 or MinimaxTargeter.get_winner(state) != 0:
             return self.evaluate(state) + depth * MinimaxTargeter.get_winner(state), 7
 
         best_move = 7
         valid_targets: list[int] = Targeter.get_valid_targets(state)
         if state.active < 3:  # maximizing player
-            max_score: float = self.inf_score
+            max_score: float = float('-inf')
             for tgt in valid_targets:
                 next_state = self.simulate(state, tgt)
                 score, _ = self.minimax(next_state, depth - 1, alpha, beta)
@@ -83,7 +74,7 @@ class MinimaxTargeter(Targeter):
                 self.state_cache.append(next_state)
             return max_score, best_move
         else:  # minimizing player
-            min_score: float = self.sup_score
+            min_score: float = float('inf')
             for tgt in valid_targets:
                 next_state = self.simulate(state, tgt)
                 score, _ = self.minimax(next_state, depth - 1, alpha, beta)
